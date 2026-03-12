@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drilling PHE OSES AI Based Fuel Optimization</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #00695c;
+            --primary-light: #00897b;
+            --secondary: #00acc1;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --danger: #f44336;
+            --dark: #0a1929;
+            --card: #132f4c;
+            --text: #ffffff;
+            --text-secondary: #b0bec5;
+            --accent: #00e676;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--dark);
+            color: var(--text);
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header h1 {
+            font-size: 1.1rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+            color: var(--accent);
+        }
+        
+        .header h2 {
+            font-size: 0.95rem;
+            color: var(--text);
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        
+        .header p {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        
+        .ai-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0,230,118,0.15);
+            border: 1px solid var(--accent);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            color: var(--accent);
+            margin-top: 8px;
+            font-weight: 600;
+        }
+        
+        .ai-badge::before {
+            content: "◉";
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Container */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+        
+        /* Cards */
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .card-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* Load Input Section */
+        .load-input-grid {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .load-display {
+            background: rgba(0,0,0,0.3);
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid var(--primary-light);
+        }
+        
+        .load-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--accent);
+        }
+        
+        .load-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 12px;
+            align-items: end;
+        }
+        
+        .input-field {
+            flex: 1;
+        }
+        
+        input[type="number"], select {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(0,0,0,0.2);
+            color: var(--text);
+            font-size: 1rem;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        
+        label {
+            display: block;
+            font-size: 0.8rem;
+            margin-bottom: 6px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        .btn {
+            padding: 14px 24px;
+            border-radius: 10px;
+            border: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: var(--accent);
+            color: #000;
+        }
+        
+        .btn-secondary {
+            background: var(--primary-light);
+            color: var(--text);
+        }
+        
+        .btn:active {
+            transform: scale(0.98);
+        }
+        
+        /* Operation Selector */
+        .operation-select {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(0,0,0,0.2);
+            color: var(--text);
+            font-size: 1rem;
+            margin-bottom: 12px;
+        }
+        
+        .operation-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+        
+        .badge-drilling { background: var(--success); color: #000; }
+        .badge-tripping { background: var(--warning); color: #000; }
+        .badge-jacking { background: #2196f3; }
+        .badge-standby { background: #757575; }
+        .badge-circulating { background: #00bcd4; color: #000; }
+        .badge-connecting { background: #e91e63; }
+        .badge-transit { background: #795548; }
+        
+        /* AI Recommendation */
+        .ai-recommendation {
+            background: linear-gradient(135deg, rgba(0,105,92,0.3) 0%, rgba(0,137,123,0.2) 100%);
+            border: 1px solid var(--primary-light);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 12px;
+        }
+        
+        .ai-recommendation h4 {
+            color: var(--accent);
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .optimal-range {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 8px;
+        }
+        
+        .range-bar {
+            flex: 1;
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            position: relative;
+        }
+        
+        .range-optimal {
+            position: absolute;
+            left: 70%;
+            right: 20%;
+            height: 100%;
+            background: var(--accent);
+            border-radius: 4px;
+        }
+        
+        .range-marker {
+            position: absolute;
+            top: -4px;
+            width: 4px;
+            height: 16px;
+            background: var(--warning);
+            border-radius: 2px;
+            transition: left 0.3s ease;
+        }
+        
+        /* Energy Breakdown */
+        .energy-bar {
+            margin-bottom: 12px;
+        }
+        
+        .energy-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            margin-bottom: 6px;
+        }
+        
+        .energy-progress {
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .energy-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        
+        /* Generator Cards */
+        .gen-grid {
+            display: grid;
+            gap: 12px;
+        }
+        
+        .gen-card {
+            background: rgba(0,0,0,0.2);
+            border-radius: 12px;
+            padding: 16px;
+            border-left: 4px solid var(--success);
+        }
+        
+        .gen-card.poor { border-left-color: var(--warning); }
+        .gen-card.critical { border-left-color: var(--danger); }
+        .gen-card.offline { border-left-color: #757575; opacity: 0.6; }
+        .gen-card.optimal { border-left-color: var(--accent); }
+        
+        .gen-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .gen-name {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        
+        .gen-status {
+            font-size: 0.7rem;
+            padding: 4px 10px;
+            border-radius: 12px;
+            background: var(--success);
+            font-weight: 600;
+            color: #000;
+        }
+        
+        .gen-status.standby { background: var(--warning); }
+        
+        .load-bar-container {
+            margin: 12px 0;
+        }
+        
+        .load-bar {
+            height: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .load-fill {
+            height: 100%;
+            border-radius: 5px;
+            transition: width 0.3s ease;
+        }
+        
+        .optimal-zone {
+            position: absolute;
+            left: 70%;
+            right: 20%;
+            top: 0;
+            bottom: 0;
+            background: rgba(0,230,118,0.2);
+            border-left: 2px dashed var(--accent);
+            border-right: 2px dashed var(--accent);
+        }
+        
+        .load-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            margin-top: 6px;
+            color: var(--text-secondary);
+        }
+        
+        .load- optimal {
+            color: var(--accent);
+            font-weight: 600;
+        }
+        
+        .gen-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+            text-align: center;
+        }
+        
+        .stat-box {
+            background: rgba(0,0,0,0.2);
+            padding: 8px;
+            border-radius: 8px;
+        }
+        
+        .stat-value {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Stats Row */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .stat-card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .stat-icon {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+        
+        .stat-number {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--accent);
+        }
+        
+        /* Optimization Panel */
+        .opt-panel {
+            background: linear-gradient(135deg, rgba(0,105,92,0.4) 0%, rgba(0,137,123,0.3) 100%);
+            border: 1px solid var(--primary-light);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        
+        .opt-title {
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--accent);
+        }
+        
+        .savings-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 16px 0;
+        }
+        
+        .saving-item {
+            text-align: center;
+            background: rgba(0,0,0,0.2);
+            padding: 12px;
+            border-radius: 10px;
+        }
+        
+        .saving-value {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--accent);
+        }
+        
+        .saving-label {
+            font-size: 0.75rem;
+            opacity: 0.9;
+        }
+        
+        .btn-implement {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            border: none;
+            background: var(--accent);
+            color: #000;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        
+        /* Additive Section */
+        .additive-list {
+            display: grid;
+            gap: 12px;
+        }
+        
+        .additive-card {
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            padding: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .additive-info h4 {
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+        
+        .additive-info p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        
+        .additive-dosage {
+            text-align: right;
+        }
+        
+        .dosage-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        
+        .dosage-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+        
+        .btn-add {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            border: 2px dashed var(--primary-light);
+            background: transparent;
+            color: var(--accent);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 24px;
+            width: 100%;
+            max-width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+        
+        .btn-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        /* Alerts */
+        .alert {
+            background: rgba(244, 67, 54, 0.15);
+            border-left: 4px solid var(--danger);
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .alert-warning {
+            background: rgba(255, 152, 0, 0.15);
+            border-left-color: var(--warning);
+        }
+        
+        .alert-info {
+            background: rgba(0, 172, 193, 0.15);
+            border-left-color: var(--secondary);
+        }
+        
+        .alert-title {
+            font-weight: 700;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* Fuel Status */
+        .fuel-temp-warning {
+            border: 2px solid var(--danger);
+        }
+        
+        .fuel-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            text-align: center;
+        }
+        
+        .fuel-item {
+            padding: 12px;
+        }
+        
+        .fuel-icon {
+            font-size: 1.5rem;
+            margin-bottom: 6px;
+        }
+        
+        .fuel-value {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        
+        .fuel-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Checklist */
+        .checklist {
+            display: none;
+        }
+        
+        .checklist.active {
+            display: block;
+        }
+        
+        .check-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            margin-bottom: 8px;
+        }
+        
+        .check-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            accent-color: var(--accent);
+        }
+        
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            z-index: 100;
+        }
+        
+        .nav-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 12px;
+        }
+        
+        .nav-btn.active {
+            color: var(--accent);
+            background: rgba(0,230,118,0.1);
+        }
+        
+        .nav-icon {
+            font-size: 1.3rem;
+        }
+        
+        /* Pages */
+        .page {
+            display: none;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        .efficiency-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .eff-optimal { background: rgba(0,230,118,0.2); color: var(--accent); }
+        .eff-good { background: rgba(76,175,80,0.2); color: var(--success); }
+        .eff-fair { background: rgba(255,152,0,0.2); color: var(--warning); }
+        .eff-poor { background: rgba(244,67,54,0.2); color: var(--danger); }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <h1>Drilling PHE OSES</h1>
+        <h2>AI Based Fuel Optimization</h2>
+        <p>Emerald Driller Offshore Jack-Up Rig</p>
+        <div class="ai-badge">AI ENGINE ACTIVE</div>
+    </div>
+    
+    <div class="container">
+        <!-- DASHBOARD PAGE -->
+        <div id="dashboard" class="page active">
+            <!-- Manual Load Input -->
+            <div class="card">
+                <div class="card-title">⚡ ACTUAL LOAD INPUT</div>
+                <div class="load-input-grid">
+                    <div class="load-display" id="loadDisplay">
+                        <div class="load-value" id="actualLoadDisplay">2,250</div>
+                        <div class="load-label">Actual Load (kW)</div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <div class="input-field">
+                            <label>Enter Actual Load (kW)</label>
+                            <input type="number" id="actualLoadInput" value="2250" min="0" max="10750" onchange="updateActualLoad()">
+                        </div>
+                        <button class="btn btn-primary" onclick="calculateOptimalConfig()">CALCULATE</button>
+                    </div>
+                </div>
+                
+                <div class="ai-recommendation" id="aiRecommendation">
+                    <h4>🤖 AI Recommendation</h4>
+                    <p>Optimal: <strong>3 generators</strong> at <strong>750 kW each (35%)</strong></p>
+                    <p style="margin-top: 8px; font-size: 0.85rem; color: var(--text-secondary);">
+                        Target: 70-80% load per generator for maximum efficiency
+                    </p>
+                    <div class="optimal-range">
+                        <span style="font-size: 0.75rem;">0%</span>
+                        <div class="range-bar">
+                            <div class="range-optimal"></div>
+                            <div class="range-marker" id="currentLoadMarker" style="left: 35%;"></div>
+                        </div>
+                        <span style="font-size: 0.75rem;">100%</span>
+                    </div>
+                    <p style="margin-top: 8px; font-size: 0.8rem; text-align: center;">
+                        <span style="color: var(--accent);">■</span> Optimal Zone (70-80%) 
+                        <span style="color: var(--warning); margin-left: 12px;">▲</span> Current
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Operation Reference -->
+            <div class="card">
+                <div class="card-title">📋 DRILLING OPERATION REFERENCE</div>
+                <select class="operation-select" id="operationSelect" onchange="updateOperationReference()">
+                    <option value="DRILLING">Drilling (4,200 kW typical)</option>
+                    <option value="TRIPPING" selected>Tripping Pipe (2,800 kW typical)</option>
+                    <option value="JACKING_UP">Jacking Up (3,500 kW typical)</option>
+                    <option value="JACKING_DOWN">Jacking Down (3,000 kW typical)</option>
+                    <option value="CIRCULATING">Circulating (3,200 kW typical)</option>
+                    <option value="CONNECTING">Making Connection (2,000 kW typical)</option>
+                    <option value="STANDBY">Standby (1,500 kW typical)</option>
+                    <option value="TRANSIT">Transit (2,200 kW typical)</option>
+                </select>
+                <div id="operationBadge" class="operation-badge badge-tripping">TRIPPING PIPE</div>
+                <p style="margin-top: 12px; font-size: 0.85rem; color: var(--text-secondary);">
+                    Reference load: <span id="refLoad">2,800</span> kW | 
+                    Suggested gens: <span id="suggestedGens">3</span>
+                </p>
+            </div>
+            
+            <!-- Energy Breakdown -->
+            <div class="card" id="energyCard">
+                <div class="card-title">📊 ENERGY USAGE BREAKDOWN</div>
+                <div id="energyBars"></div>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-icon">⚡</div>
+                    <div class="stat-number" id="statLoad">2,250</div>
+                    <div class="stat-label">Total Load (kW)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⛽</div>
+                    <div class="stat-number" id="statFuel">298</div>
+                    <div class="stat-label">Fuel Rate (L/h)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🎯</div>
+                    <div class="stat-number" id="statEfficiency">35%</div>
+                    <div class="stat-label">Avg Load %</div>
+                </div>
+            </div>
+            
+            <!-- Fuel Status -->
+            <div class="card" id="fuelCard">
+                <div class="card-title">⛽ BIO SOLAR B-40 STATUS</div>
+                <div class="fuel-grid">
+                    <div class="fuel-item">
+                        <div class="fuel-icon">🛢️</div>
+                        <div class="fuel-value">68%</div>
+                        <div class="fuel-label">Tank Level</div>
+                    </div>
+                    <div class="fuel-item">
+                        <div class="fuel-icon">🌡️</div>
+                        <div class="fuel-value" id="fuelTemp">18°C</div>
+                        <div class="fuel-label">Temperature</div>
+                    </div>
+                    <div class="fuel-item">
+                        <div class="fuel-icon">💧</div>
+                        <div class="fuel-value">180 ppm</div>
+                        <div class="fuel-label">Water Content</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Additives -->
+            <div class="card">
+                <div class="card-title">🧪 ACTIVE ADDITIVES</div>
+                <div class="additive-list" id="additiveList">
+                    <div class="additive-card">
+                        <div class="additive-info">
+                            <h4>Cetane Improver</h4>
+                            <p>Nalco EC5468A • Batch: NAL-2026-001</p>
+                        </div>
+                        <div class="additive-dosage">
+                            <div class="dosage-value">1:1000</div>
+                            <div class="dosage-label">Dosage</div>
+                        </div>
+                    </div>
+                    <div class="additive-card">
+                        <div class="additive-info">
+                            <h4>Combustion Enhancer</h4>
+                            <p>PowerZol 9543 • Batch: PZ-2026-089</p>
+                        </div>
+                        <div class="additive-dosage">
+                            <div class="dosage-value">0.5%</div>
+                            <div class="dosage-label">By Volume</div>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn-add" onclick="openAdditiveModal()">+ Add New Additive</button>
+            </div>
+            
+            <!-- Generators -->
+            <div class="card">
+                <div class="card-title">🔧 GENERATOR STATUS (5× CAT 3516B)</div>
+                <div class="gen-grid" id="genGrid"></div>
+            </div>
+            
+            <!-- AI Optimization Panel -->
+            <div class="opt-panel" id="optPanel">
+                <div class="opt-title">🤖 AI OPTIMIZATION RECOMMENDATION</div>
+                <p id="optRationale">Current: 3 gens @ 35% load (Below optimal 70-80%)</p>
+                <p style="margin-top: 8px; color: var(--accent); font-weight: 600;" id="optSuggestion">
+                    Suggestion: Reduce to 2 gens @ 52% load OR increase load to 70-80%
+                </p>
+                
+                <div class="savings-grid">
+                    <div class="saving-item">
+                        <div class="saving-value" id="savePercent">+24%</div>
+                        <div class="saving-label">Efficiency Gain</div>
+                    </div>
+                    <div class="saving-item">
+                        <div class="saving-value" id="saveDaily">520L</div>
+                        <div class="saving-label">Save/Day</div>
+                    </div>
+                    <div class="saving-item">
+                        <div class="saving-value" id="saveYearly">$228k</div>
+                        <div class="saving-label">Save/Year</div>
+                    </div>
+                </div>
+                
+                <button class="btn-implement" onclick="implementRecommendation()">
+                    IMPLEMENT AI RECOMMENDATION
+                </button>
+            </div>
+            
+            <!-- Alerts -->
+            <div id="alertsContainer"></div>
+        </div>
+        
+        <!-- INPUT PAGE -->
+        <div id="input" class="page">
+            <!-- Load Input -->
+            <div class="card">
+                <div class="card-title">⚡ MANUAL LOAD INPUT</div>
+                <div class="form-group">
+                    <label>Actual Total Load (kW)</label>
+                    <input type="number" id="manualLoad" value="2250" min="0" max="10750">
+                </div>
+                <div class="form-group">
+                    <label>Number of Running Generators</label>
+                    <select id="manualGenCount">
+                        <option value="2">2 Generators</option>
+                        <option value="3" selected>3 Generators</option>
+                        <option value="4">4 Generators</option>
+                        <option value="5">5 Generators</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="applyManualLoad()" style="width: 100%;">
+                    APPLY TO CALCULATION
+                </button>
+            </div>
+            
+            <!-- Operation Checklist -->
+            <div class="card">
+                <div class="card-title">📋 OPERATION CHECKLIST</div>
+                <select class="operation-select" id="inputOperation" onchange="showChecklist()">
+                    <option value="DRILLING">Drilling</option>
+                    <option value="TRIPPING" selected>Tripping Pipe</option>
+                    <option value="JACKING_UP">Jacking Up</option>
+                    <option value="JACKING_DOWN">Jacking Down</option>
+                    <option value="CIRCULATING">Circulating</option>
+                    <option value="CONNECTING">Making Connection</option>
+                    <option value="STANDBY">Standby</option>
+                    <option value="TRANSIT">Transit</option>
+                </select>
+                
+                <!-- Checklists -->
+                <div id="checklist-DRILLING" class="checklist">
+                    <div class="check-item"><input type="checkbox"> Top Drive active</div>
+                    <div class="check-item"><input type="checkbox"> Mud pumps circulating</div>
+                    <div class="check-item"><input type="checkbox"> Rotary table engaged</div>
+                    <div class="check-item"><input type="checkbox"> BOP tested & ready</div>
+                    <div class="check-item"><input type="checkbox"> Cooling systems at 100%</div>
+                </div>
+                
+                <div id="checklist-TRIPPING" class="checklist active">
+                    <div class="check-item"><input type="checkbox" checked> Drawworks active</div>
+                    <div class="check-item"><input type="checkbox" checked> Top Drive standby</div>
+                    <div class="check-item"><input type="checkbox"> Mud pumps on</div>
+                    <div class="check-item"><input type="checkbox"> Elevator & slips ready</div>
+                    <div class="check-item"><input type="checkbox"> BOP rams tested</div>
+                </div>
+                
+                <div id="checklist-JACKING_UP" class="checklist">
+                    <div class="check-item"><input type="checkbox"> Jacking motors engaged</div>
+                    <div class="check-item"><input type="checkbox"> Legs clear of seabed</div>
+                    <div class="check-item"><input type="checkbox"> Hull level within 0.5°</div>
+                    <div class="check-item"><input type="checkbox"> Air gap sufficient</div>
+                    <div class="check-item"><input type="checkbox"> Emergency stop tested</div>
+                </div>
+                
+                <button class="btn btn-secondary" onclick="saveOperation()" style="width: 100%; margin-top: 16px;">
+                    CONFIRM OPERATION
+                </button>
+            </div>
+            
+            <!-- Fuel Data -->
+            <div class="card">
+                <div class="card-title">⛽ FUEL DATA INPUT</div>
+                <div class="form-group">
+                    <label>Fuel Type</label>
+                    <select id="fuelType">
+                        <option value="B40" selected>Bio Solar B-40</option>
+                        <option value="B30">Bio Solar B-30</option>
+                        <option value="DIESEL">Diesel B-0</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Batch Number</label>
+                    <input type="text" value="BS-JKT-2026-03-001">
+                </div>
+                <div class="form-group">
+                    <label>Tank Level (%)</label>
+                    <input type="number" value="68" min="0" max="100">
+                </div>
+                <div class="form-group">
+                    <label>Fuel Temperature (°C)</label>
+                    <input type="number" value="18" id="inputFuelTemp" onchange="checkTemp()">
+                </div>
+            </div>
+            
+            <!-- Additive Input -->
+            <div class="card">
+                <div class="card-title">🧪 ADDITIVE INPUT</div>
+                <div id="additiveInputList">
+                    <!-- Populated by JS -->
+                </div>
+                <button class="btn-add" onclick="openAdditiveModal()">+ Add Additive</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Additive Modal -->
+    <div class="modal" id="additiveModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title">Add New Additive</span>
+                <button class="btn-close" onclick="closeAdditiveModal()">×</button>
+            </div>
+            <div class="form-group">
+                <label>Additive Type</label>
+                <select id="newAdditiveType">
+                    <option value="CETANE_IMPROVER">Cetane Improver</option>
+                    <option value="COMBUSTION_ENHANCER">Combustion Enhancer</option>
+                    <option value="ANTIOXIDANT">Antioxidant</option>
+                    <option value="COLD_FLOW">Cold Flow Improver</option>
+                    <option value="BIOCIDE">Biocide</option>
+                    <option value="DEMULSIFIER">Demulsifier</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Brand Name</label>
+                <input type="text" id="newAdditiveBrand" placeholder="e.g., Nalco EC5468A">
+            </div>
+            <div class="form-group">
+                <label>Batch Number</label>
+                <input type="text" id="newAdditiveBatch" placeholder="e.g., NAL-2026-001">
+            </div>
+            <div class="form-group">
+                <label>Dosage Rate</label>
+                <input type="text" id="newAdditiveDosage" placeholder="e.g., 1:1000 or 0.5%">
+            </div>
+            <div class="form-group">
+                <label>Treatment Rate (%)</label>
+                <input type="number" id="newAdditivePercent" placeholder="0.0" min="0" max="100" step="0.1">
+            </div>
+            <button class="btn btn-primary" onclick="addAdditive()" style="width: 100%;">
+                ADD ADDITIVE
+            </button>
+        </div>
+    </div>
+    
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <button class="nav-btn active" onclick="showPage('dashboard')">
+            <span class="nav-icon">📊</span>
+            <span>Dashboard</span>
+        </button>
+        <button class="nav-btn" onclick="showPage('input')">
+            <span class="nav-icon">⚙️</span>
+            <span>Input</span>
+        </button>
+    </div>
+    
+    <script>
+        // Configuration
+        const OPTIMAL_MIN = 70;
+        const OPTIMAL_MAX = 80;
+        const RATED_KVA = 2150;
+        const MAX_LOAD = 10750; // 5 × 2150
+        
+        // Data Models
+        const operations = {
+            DRILLING: {
+                name: 'DRILLING',
+                typicalLoad: 4200,
+                suggestedGens: 4,
+                color: 'badge-drilling',
+                breakdown: [
+                    {name: 'Top Drive', percent: 35, color: '#4caf50'},
+                    {name: 'Mud Pumps', percent: 30, color: '#2196f3'},
+                    {name: 'Rotary Table', percent: 10, color: '#9c27b0'},
+                    {name: 'BOP & Controls', percent: 8, color: '#f44336'},
+                    {name: 'Cooling Systems', percent: 7, color: '#00bcd4'},
+                    {name: 'HVAC & Living', percent: 5, color: '#795548'},
+                    {name: 'Cranes & Aux', percent: 5, color: '#3f51b5'}
+                ]
+            },
+            TRIPPING: {
+                name: 'TRIPPING PIPE',
+                typicalLoad: 2800,
+                suggestedGens: 3,
+                color: 'badge-tripping',
+                breakdown: [
+                    {name: 'Drawworks', percent: 40, color: '#ff9800'},
+                    {name: 'Mud Pumps', percent: 20, color: '#2196f3'},
+                    {name: 'Top Drive', percent: 15, color: '#4caf50'},
+                    {name: 'BOP & Controls', percent: 8, color: '#f44336'},
+                    {name: 'Cooling Systems', percent: 7, color: '#00bcd4'},
+                    {name: 'HVAC & Living', percent: 5, color: '#795548'},
+                    {name: 'Cranes & Aux', percent: 5, color: '#3f51b5'}
+                ]
+            },
+            JACKING_UP: {
+                name: 'JACKING UP',
+                typicalLoad: 3500,
+                suggestedGens: 3,
+                color: 'badge-jacking',
+                breakdown: [
+                    {name: 'Jacking System', percent: 45, color: '#2196f3'},
+                    {name: 'Mud Pumps', percent: 15, color: '#2196f3'},
+                    {name: 'BOP & Controls', percent: 10, color: '#f44336'},
+                    {name: 'Cooling Systems', percent: 10, color: '#00bcd4'},
+                    {name: 'HVAC & Living', percent: 8, color: '#795548'},
+                    {name: 'Cranes & Aux', percent: 7, color: '#3f51b5'},
+                    {name: 'Top Drive', percent: 5, color: '#4caf50'}
+                ]
+            },
+            JACKING_DOWN: {
+                name: 'JACKING DOWN',
+                typicalLoad: 3000,
+                suggestedGens: 3,
+                color: 'badge-jacking',
+                breakdown: [
+                    {name: 'Jacking System', percent: 40, color: '#2196f3'},
+                    {name: 'Mud Pumps', percent: 15, color: '#2196f3'},
+                    {name: 'BOP & Controls', percent: 10, color: '#f44336'},
+                    {name: 'Cooling Systems', percent: 10, color: '#00bcd4'},
+                    {name: 'Cranes & Aux', percent: 10, color: '#3f51b5'},
+                    {name: 'HVAC & Living', percent: 8, color: '#795548'},
+                    {name: 'Top Drive', percent: 7, color: '#4caf50'}
+                ]
+            },
+            CIRCULATING: {
+                name: 'CIRCULATING',
+                typicalLoad: 3200,
+                suggestedGens: 3,
+                color: 'badge-circulating',
+                breakdown: [
+                    {name: 'Mud Pumps', percent: 55, color: '#2196f3'},
+                    {name: 'Top Drive', percent: 10, color: '#4caf50'},
+                    {name: 'BOP & Controls', percent: 10, color: '#f44336'},
+                    {name: 'Cooling Systems', percent: 10, color: '#00bcd4'},
+                    {name: 'HVAC & Living', percent: 8, color: '#795548'},
+                    {name: 'Cranes & Aux', percent: 7, color: '#3f51b5'}
+                ]
+            },
+            CONNECTING: {
+                name: 'MAKING CONNECTION',
+                typicalLoad: 2000,
+                suggestedGens: 2,
+                color: 'badge-connecting',
+                breakdown: [
+                    {name: 'Top Drive', percent: 25, color: '#4caf50'},
+                    {name: 'Mud Pumps', percent: 20, color: '#2196f3'},
+                    {name: 'BOP & Controls', percent: 15, color: '#f44336'},
+                    {name: 'Cooling Systems', percent: 15, color: '#00bcd4'},
+                    {name: 'HVAC & Living', percent: 10, color: '#795548'},
+                    {name: 'Cranes & Aux', percent: 10, color: '#3f51b5'},
+                    {name: 'Drawworks', percent: 5, color: '#ff9800'}
+                ]
+            },
+            STANDBY: {
+                name: 'STANDBY',
+                typicalLoad: 1500,
+                suggestedGens: 2,
+                color: 'badge-standby',
+                breakdown: [
+                    {name: 'HVAC & Living', percent: 30, color: '#795548'},
+                    {name: 'BOP & Controls', percent: 25, color: '#f44336'},
+                    {name: 'Cooling Systems', percent: 20, color: '#00bcd4'},
+                    {name: 'Navigation & Comms', percent: 15, color: '#607d8b'},
+                    {name: 'Cranes & Aux', percent: 10, color: '#3f51b5'}
+                ]
+            },
+            TRANSIT: {
+                name: 'TRANSIT',
+                typicalLoad: 2200,
+                suggestedGens: 2,
+                color: 'badge-transit',
+                breakdown: [
+                    {name: 'Propulsion/Thrusters', percent: 30, color: '#795548'},
+                    {name: 'Navigation & Comms', percent: 25, color: '#607d8b'},
+                    {name: 'HVAC & Living', percent: 20, color: '#795548'},
+                    {name: 'BOP & Controls', percent: 10, color: '#f44336'},
+                    {name: 'Cooling Systems', percent: 10, color: '#00bcd4'},
+                    {name: 'Cranes & Aux', percent: 5, color: '#3f51b5'}
+                ]
+            }
+        };
+        
+        let generators = [
+            {id: 'GEN-01', name: 'GEN-01 (CAT 3516B)', status: 'RUNNING', load: 750, loadPercent: 34.9, fuel: 98, temp: 92, efficiency: 'FAIR', runtime: 12450},
+            {id: 'GEN-02', name: 'GEN-02 (CAT 3516B)', status: 'RUNNING', load: 820, loadPercent: 38.1, fuel: 105, temp: 89, efficiency: 'FAIR', runtime: 11800},
+            {id: 'GEN-03', name: 'GEN-03 (CAT 3516B)', status: 'RUNNING', load: 680, loadPercent: 31.6, fuel: 95, temp: 88, efficiency: 'POOR', runtime: 13200},
+            {id: 'GEN-04', name: 'GEN-04 (CAT 3516B)', status: 'STANDBY', load: 0, loadPercent: 0, fuel: 0, temp: 45, efficiency: 'UNKNOWN', runtime: 9800},
+            {id: 'GEN-05', name: 'GEN-05 (CAT 3516B)', status: 'STANDBY', load: 0, loadPercent: 0, fuel: 0, temp: 42, efficiency: 'UNKNOWN', runtime: 10500}
+        ];
+        
+        let additives = [
+            {type: 'Cetane Improver', brand: 'Nalco EC5468A', batch: 'NAL-2026-001', dosage: '1:1000', percent: 0.1},
+            {type: 'Combustion Enhancer', brand: 'PowerZol 9543', batch: 'PZ-2026-089', dosage: '0.5%', percent: 0.5}
+        ];
+        
+        let actualLoad = 2250;
+        let currentOperation = 'TRIPPING';
+        
+        // Initialize
+        function init() {
+            renderGenerators();
+            renderAdditives();
+            updateOperationReference();
+            calculateOptimalConfig();
+        }
+        
+        // Update Actual Load
+        function updateActualLoad() {
+            const input = document.getElementById('actualLoadInput');
+            actualLoad = parseInt(input.value) || 0;
+            if (actualLoad > MAX_LOAD) {
+                actualLoad = MAX_LOAD;
+                input.value = MAX_LOAD;
+            }
+            document.getElementById('actualLoadDisplay').textContent = actualLoad.toLocaleString();
+            calculateOptimalConfig();
+        }
+        
+        // Calculate Optimal Configuration
+        function calculateOptimalConfig() {
+            const runningGens = generators.filter(g => g.status === 'RUNNING').length;
+            const currentLoadPerGen = runningGens > 0 ? actualLoad / runningGens : 0;
+            const currentPercent = (currentLoadPerGen / RATED_KVA) * 100;
+            
+            // Find optimal number of generators for 70-80% load
+            let optimalGens = 2;
+            let optimalLoadPercent = 0;
+            let minDiff = Infinity;
+            
+            for (let gens = 2; gens <= 5; gens++) {
+                const loadPerGen = actualLoad / gens;
+                const percent = (loadPerGen / RATED_KVA) * 100;
+                
+                // Check if within optimal range
+                if (percent >= OPTIMAL_MIN && percent <= OPTIMAL_MAX) {
+                    optimalGens = gens;
+                    optimalLoadPercent = percent;
+                    break;
+                }
+                
+                // Find closest to optimal range
+                const diff = Math.min(Math.abs(percent - OPTIMAL_MIN), Math.abs(percent - OPTIMAL_MAX));
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    optimalGens = gens;
+                    optimalLoadPercent = percent;
+                }
+            }
+            
+            const optimalLoadPerGen = actualLoad / optimalGens;
+            
+            // Update AI Recommendation
+            const markerPos = Math.min((currentPercent / 100) * 100, 100);
+            document.getElementById('currentLoadMarker').style.left = markerPos + '%';
+            
+            // Update suggestion text
+            let suggestion = '';
+            let efficiencyGain = 0;
+            
+            if (currentPercent < OPTIMAL_MIN) {
+                const targetGens = Math.ceil(actualLoad / (RATED_KVA * 0.75));
+                suggestion = `Reduce to ${targetGens} gens @ ${Math.round(actualLoad/targetGens/RATED_KVA*100)}% load or increase total load to ${Math.round(RATED_KVA * 0.75 * runningGens)} kW`;
+                efficiencyGain = Math.round((OPTIMAL_MIN - currentPercent) * 0.8);
+            } else if (currentPercent > OPTIMAL_MAX) {
+                suggestion = `Add 1 generator to reduce load to ${Math.round(actualLoad/(runningGens+1)/RATED_KVA*100)}% per unit`;
+                efficiencyGain = Math.round((currentPercent - OPTIMAL_MAX) * 0.5);
+            } else {
+                suggestion = 'Current configuration is OPTIMAL (70-80% load)';
+                efficiencyGain = 0;
+            }
+            
+            document.getElementById('aiRecommendation').innerHTML = `
+                <h4>🤖 AI Recommendation</h4>
+                <p>Current: <strong>${runningGens} generators</strong> at <strong>${Math.round(currentLoadPerGen).toLocaleString()} kW each (${Math.round(currentPercent)}%)</strong></p>
+                <p style="margin-top: 8px; font-size: 0.85rem; color: var(--text-secondary);">
+                    Target: 70-80% load per generator for maximum efficiency
+                </p>
+                <div class="optimal-range">
+                    <span style="font-size: 0.75rem;">0%</span>
+                    <div class="range-bar">
+                        <div class="range-optimal"></div>
+                        <div class="range-marker" style="left: ${markerPos}%;"></div>
+                    </div>
+                    <span style="font-size: 0.75rem;">100%</span>
+                </div>
+                <p style="margin-top: 8px; font-size: 0.8rem; text-align: center;">
+                    <span style="color: var(--accent);">■</span> Optimal Zone (70-80%) 
+                    <span style="color: var(--warning); margin-left: 12px;">▲</span> Current
+                </p>
+            `;
+            
+            // Update Optimization Panel
+            document.getElementById('optRationale').textContent = 
+                `Current: ${runningGens} gens @ ${Math.round(currentPercent)}% load (Target: 70-80%)`;
+            document.getElementById('optSuggestion').textContent = `Suggestion: ${suggestion}`;
+            
+            // Calculate savings
+            const currentFuel = runningGens * calculateFuelRate(currentPercent);
+            const optimalFuel = optimalGens * calculateFuelRate(Math.min(Math.max(optimalLoadPercent, OPTIMAL_MIN), OPTIMAL_MAX));
+            const dailySave = Math.round((currentFuel - optimalFuel) * 24);
+            const yearlySave = Math.round(dailySave * 365 * 1.2 / 1000);
+            
+            document.getElementById('savePercent').textContent = (efficiencyGain > 0 ? '+' : '') + efficiencyGain + '%';
+            document.getElementById('saveDaily').textContent = dailySave > 0 ? dailySave + 'L' : '0L';
+            document.getElementById('saveYearly').textContent = '$' + yearlySave + 'k';
+            
+            // Update stats
+            document.getElementById('statLoad').textContent = actualLoad.toLocaleString();
+            document.getElementById('statFuel').textContent = Math.round(currentFuel);
+            document.getElementById('statEfficiency').textContent = Math.round(currentPercent) + '%';
+            
+            // Update generator cards with optimal indicator
+            updateGeneratorOptimalStatus(optimalGens, optimalLoadPerGen);
+            
+            // Check alerts
+            checkAlerts(currentPercent, runningGens);
+        }
+        
+        function calculateFuelRate(loadPercent) {
+            // Simplified SFC curve
+            const baseSFC = 180 + Math.abs(loadPercent - 85) * 0.5;
+            return (baseSFC * (loadPercent/100 * RATED_KVA)) / 1000 / 0.865 * 0.97; // With additive benefit
+        }
+        
+        function updateGeneratorOptimalStatus(optimalGens, optimalLoadPerGen) {
+            generators.forEach((gen, idx) => {
+                if (gen.status === 'RUNNING') {
+                    const isOptimal = gen.loadPercent >= OPTIMAL_MIN && gen.loadPercent <= OPTIMAL_MAX;
+                    gen.efficiency = isOptimal ? 'OPTIMAL' : gen.loadPercent < OPTIMAL_MIN ? 'POOR' : 'FAIR';
+                }
+            });
+            renderGenerators();
+        }
+        
+        function renderGenerators() {
+            const container = document.getElementById('genGrid');
+            container.innerHTML = generators.map(gen => {
+                const isOptimal = gen.loadPercent >= OPTIMAL_MIN && gen.loadPercent <= OPTIMAL_MAX;
+                const statusClass = gen.status === 'STANDBY' ? 'offline' : 
+                                   gen.efficiency === 'OPTIMAL' ? 'optimal' :
+                                   gen.efficiency === 'POOR' ? 'poor' : '';
+                const statusText = gen.status === 'RUNNING' ? 'RUNNING' : 'STANDBY';
+                const loadColor = gen.loadPercent > 90 ? '#f44336' : 
+                                 gen.loadPercent < OPTIMAL_MIN ? '#ff9800' : '#00e676';
+                
+                const efficiencyBadge = gen.status === 'RUNNING' ? 
+                    `<span class="efficiency-indicator ${isOptimal ? 'eff-optimal' : gen.loadPercent < OPTIMAL_MIN ? 'eff-poor' : 'eff-good'}">
+                        ${isOptimal ? '✓ OPTIMAL' : gen.loadPercent < OPTIMAL_MIN ? '↓ LOW' : '↑ HIGH'}
+                     </span>` : '';
+                
+                return `
+                    <div class="gen-card ${statusClass}">
+                        <div class="gen-header">
+                            <span class="gen-name">${gen.name}</span>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                ${efficiencyBadge}
+                                <span class="gen-status ${gen.status.toLowerCase()}">${statusText}</span>
+                            </div>
+                        </div>
+                        ${gen.status === 'RUNNING' ? `
+                            <div class="load-bar-container">
+                                <div class="load-bar">
+                                    <div class="optimal-zone"></div>
+                                    <div class="load-fill" style="width: ${gen.loadPercent}%; background: ${loadColor}"></div>
+                                </div>
+                                <div class="load-text">
+                                    <span class="${isOptimal ? 'load-optimal' : ''}">${gen.loadPercent}% Load</span>
+                                    <span>${gen.load} kW</span>
+                                </div>
+                            </div>
+                            <div class="gen-stats">
+                                <div class="stat-box">
+                                    <div class="stat-value">${gen.fuel}</div>
+                                    <div class="stat-label">L/h</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="stat-value">${gen.temp}°C</div>
+                                    <div class="stat-label">Coolant</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="stat-value">${Math.round(gen.runtime/24)}d</div>
+                                    <div class="stat-label">Runtime</div>
+                                </div>
+                            </div>
+                        ` : '<p style="color: var(--text-secondary); font-size: 0.9rem;">Standby - Ready to start</p>'}
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function renderAdditives() {
+            const container = document.getElementById('additiveList');
+            container.innerHTML = additives.map(add => `
+                <div class="additive-card">
+                    <div class="additive-info">
+                        <h4>${add.type}</h4>
+                        <p>${add.brand} • Batch: ${add.batch}</p>
+                    </div>
+                    <div class="additive-dosage">
+                        <div class="dosage-value">${add.dosage}</div>
+                        <div class="dosage-label">${add.percent}% treatment</div>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Also update input page list
+            const inputContainer = document.getElementById('additiveInputList');
+            if (inputContainer) {
+                inputContainer.innerHTML = additives.map((add, idx) => `
+                    <div class="additive-card" style="margin-bottom: 8px;">
+                        <div class="additive-info">
+                            <h4>${add.type}</h4>
+                            <p>${add.brand} • ${add.dosage}</p>
+                        </div>
+                        <button onclick="removeAdditive(${idx})" style="background: var(--danger); border: none; color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer;">Remove</button>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        function updateOperationReference() {
+            const select = document.getElementById('operationSelect');
+            currentOperation = select.value;
+            const op = operations[currentOperation];
+            
+            document.getElementById('operationBadge').className = 'operation-badge ' + op.color;
+            document.getElementById('operationBadge').textContent = op.name;
+            document.getElementById('refLoad').textContent = op.typicalLoad.toLocaleString();
+            document.getElementById('suggestedGens').textContent = op.suggestedGens;
+            
+            // Update energy breakdown
+            const container = document.getElementById('energyBars');
+            container.innerHTML = op.breakdown.map(item => `
+                <div class="energy-bar">
+                    <div class="energy-label">
+                        <span>${item.name}</span>
+                        <span>${item.percent}%</span>
+                    </div>
+                    <div class="energy-progress">
+                        <div class="energy-fill" style="width: ${item.percent}%; background: ${item.color}"></div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function checkAlerts(currentPercent, runningGens) {
+            const container = document.getElementById('alertsContainer');
+            const alerts = [];
+            
+            // Fuel temp check
+            const fuelTemp = 18;
+            if (fuelTemp < 10) {
+                alerts.push({
+                    level: 'CRITICAL',
+                    message: `B-40 fuel temperature critical (${fuelTemp}°C)`,
+                    action: 'Activate tank heaters immediately'
+                });
+                document.getElementById('fuelCard').classList.add('fuel-temp-warning');
+            }
+            
+            // Load optimization alerts
+            if (currentPercent < OPTIMAL_MIN) {
+                alerts.push({
+                    level: 'WARNING',
+                    message: `Generator load below optimal range (${Math.round(currentPercent)}% < ${OPTIMAL_MIN}%)`,
+                    action: 'Consolidate load or reduce generator count'
+                });
+            } else if (currentPercent > 90) {
+                alerts.push({
+                    level: 'CRITICAL',
+                    message: `Generator load critically high (${Math.round(currentPercent)}%)`,
+                    action: 'Add generator immediately to prevent overload'
+                });
+            }
+            
+            // Operation-specific alerts
+            if (currentOperation === 'JACKING_UP' || currentOperation === 'JACKING_DOWN') {
+                if (runningGens < 3) {
+                    alerts.push({
+                        level: 'CRITICAL',
+                        message: 'Jacking operation requires minimum 3 generators',
+                        action: 'Start standby generator immediately'
+                    });
+                }
+            }
+            
+            container.innerHTML = alerts.map(alert => `
+                <div class="alert ${alert.level === 'WARNING' ? 'alert-warning' : alert.level === 'INFO' ? 'alert-info' : ''}">
+                    <div class="alert-title">
+                        ${alert.level === 'CRITICAL' ? '🔴' : alert.level === 'WARNING' ? '⚠️' : 'ℹ️'} ${alert.level}
+                    </div>
+                    <p>${alert.message}</p>
+                    ${alert.action ? `<p style="margin-top: 8px; opacity: 0.9;">→ ${alert.action}</p>` : ''}
+                </div>
+            `).join('');
+        }
+        
+        // Additive Management
+        function openAdditiveModal() {
+            document.getElementById('additiveModal').classList.add('active');
+        }
+        
+        function closeAdditiveModal() {
+            document.getElementById('additiveModal').classList.remove('active');
+        }
+        
+        function addAdditive() {
+            const type = document.getElementById('newAdditiveType');
+            const brand = document.getElementById('newAdditiveBrand');
+            const batch = document.getElementById('newAdditiveBatch');
+            const dosage = document.getElementById('newAdditiveDosage');
+            const percent = document.getElementById('newAdditivePercent');
+            
+            additives.push({
+                type: type.options[type.selectedIndex].text,
+                brand: brand.value,
+                batch: batch.value,
+                dosage: dosage.value,
+                percent: parseFloat(percent.value) || 0
+            });
+            
+            renderAdditives();
+            closeAdditiveModal();
+            
+            // Clear inputs
+            brand.value = '';
+            batch.value = '';
+            dosage.value = '';
+            percent.value = '';
+        }
+        
+        function removeAdditive(index) {
+            additives.splice(index, 1);
+            renderAdditives();
+        }
+        
+        // Navigation
+        function showPage(page) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(page).classList.add('active');
+            
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            event.target.closest('.nav-btn').classList.add('active');
+        }
+        
+        // Manual Load Application
+        function applyManualLoad() {
+            const load = parseInt(document.getElementById('manualLoad').value) || 0;
+            const genCount = parseInt(document.getElementById('manualGenCount').value) || 3;
+            
+            // Update actual load
+            actualLoad = load;
+            document.getElementById('actualLoadInput').value = load;
+            document.getElementById('actualLoadDisplay').textContent = load.toLocaleString();
+            
+            // Update generator statuses
+            generators.forEach((gen, idx) => {
+                gen.status = idx < genCount ? 'RUNNING' : 'STANDBY';
+                if (gen.status === 'RUNNING') {
+                    gen.load = Math.round(load / genCount);
+                    gen.loadPercent = parseFloat(((gen.load / RATED_KVA) * 100).toFixed(1));
+                    gen.fuel = Math.round(80 + Math.random() * 30);
+                } else {
+                    gen.load = 0;
+                    gen.loadPercent = 0;
+                    gen.fuel = 0;
+                }
+            });
+            
+            calculateOptimalConfig();
+            showPage('dashboard');
+            document.querySelectorAll('.nav-btn')[0].classList.add('active');
+            document.querySelectorAll('.nav-btn')[1].classList.remove('active');
+        }
+        
+        function showChecklist() {
+            const op = document.getElementById('inputOperation').value;
+            document.querySelectorAll('.checklist').forEach(c => c.classList.remove('active'));
+            document.getElementById('checklist-' + op).classList.add('active');
+        }
+        
+        function saveOperation() {
+            const op = document.getElementById('inputOperation').value;
+            document.getElementById('operationSelect').value = op;
+            updateOperationReference();
+            showPage('dashboard');
+            document.querySelectorAll('.nav-btn')[0].classList.add('active');
+            document.querySelectorAll('.nav-btn')[1].classList.remove('active');
+        }
+        
+        function implementRecommendation() {
+            alert('🤖 AI Recommendation logged for Emerald Driller. Awaiting operator confirmation.\n\nOptimal target: 70-80% load per generator');
+        }
+        
+        function checkTemp() {
+            const temp = parseInt(document.getElementById('inputFuelTemp').value);
+            document.getElementById('fuelTemp').textContent = temp + '°C';
+            calculateOptimalConfig();
+        }
+        
+        // Start
+        init();
+    </script>
+</body>
+</html>
